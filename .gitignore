@@ -1,0 +1,8 @@
+# Local junk and Claude notes stay out of the repo
+.claude/
+__pycache__/
+*.tmp
+*.bak
+Thumbs.db
+desktop.ini
+.DS_Store
