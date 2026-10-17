@@ -1,7 +1,7 @@
-// Regression checks for the 2026-10-16 bug fixes. Run against a fresh page (phone-view uses a fresh profile):
+// Regression checks for the 2026-10-16 bug fixes and the 2026-10-17 in-page Reset All confirm. Run against a fresh page (phone-view uses a fresh profile):
 //   node ~/.claude/tools/phone-view.mjs http://localhost:8120/ --eval "$(cat docs/phone-view-checks.js)"
-// Keys ending in _should_be_X must equal X; *_ok / *_removed / *_shown_as_text / *_restores_list must be true.
-(() => {
+// Keys ending in _should_be_X must equal X; *_ok / *_removed / *_shown_as_text / *_restores_list / *_unused / *_open / *_has_focus must be true.
+(async () => {
   const r = {};
   const setScore = (id, a, b) => { document.getElementById('score1-' + id).value = a; document.getElementById('score2-' + id).value = b; };
   // A: re-submitting a group match must not double-count standings
@@ -74,8 +74,24 @@
   r.G_typed_kept_should_be_4 = document.getElementById('score1-G7').value;
   resetMatch('G1');
   r.G_reset_clears_should_be_empty = document.getElementById('score1-G1').value + '|' + document.getElementById('score2-G1').value;
-  window.confirm = () => true; resetAll();
+  // H: Reset All uses the in-page confirm. Cancel, Escape and backdrop keep everything; OK and Enter reset
+  r.H_native_confirm_unused = true; window.confirm = () => { r.H_native_confirm_unused = false; return true; };
+  const modal = document.getElementById('confirm-modal');
+  const key = k => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+  let p = resetAll(); r.H_dialog_open = modal.classList.contains('active');
+  r.H_ok_has_focus = document.activeElement.id === 'confirm-ok';
+  document.getElementById('confirm-cancel').click(); await p;
+  r.H_cancel_keeps_should_be_4 = document.getElementById('score1-G7').value + (modal.classList.contains('active') ? ' (still open)' : '');
+  p = resetAll(); key('Escape'); await p;
+  r.H_escape_keeps_should_be_4 = document.getElementById('score1-G7').value + (modal.classList.contains('active') ? ' (still open)' : '');
+  p = resetAll(); modal.click(); await p;
+  r.H_backdrop_keeps_should_be_4 = document.getElementById('score1-G7').value + (modal.classList.contains('active') ? ' (still open)' : '');
+  p = resetAll(); key('Enter'); await p;
   r.G_resetall_clears_should_be_empty = document.getElementById('score1-G7').value;
+  document.getElementById('score1-G7').value = 5; document.getElementById('new-player-name').value = 'Kim'; addPlayer();
+  p = resetAll(); document.getElementById('confirm-ok').click(); await p;
+  r.H_ok_clears_should_be_empty = document.getElementById('score1-G7').value + (modal.classList.contains('active') ? ' (still open)' : '');
+  r.H_ok_players_should_be_0 = gameState.players.length;
   } catch (e) { r['G_section_error'] = e.message; }
   localStorage.removeItem('worldcup2026');
   return JSON.stringify(r);

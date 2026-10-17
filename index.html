@@ -286,6 +286,20 @@
             background: rgba(255,255,255,0.2);
         }
 
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .confirm-message {
+            line-height: 1.5;
+        }
+
         /* Knockout Bracket */
         .bracket-container {
             overflow-x: auto;
@@ -659,6 +673,16 @@
                 <span class="close-modal" role="button" aria-label="Close" onclick="closeModal()">&times;</span>
             </div>
             <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-message">
+        <div class="modal-content">
+            <p class="confirm-message" id="confirm-message"></p>
+            <div class="match-actions" style="margin-top: 20px;">
+                <button class="btn btn-reset" id="confirm-cancel">Cancel</button>
+                <button class="btn btn-danger" id="confirm-ok">OK</button>
+            </div>
         </div>
     </div>
 
@@ -1679,8 +1703,39 @@
             showNotification('Progress loaded!', 'success');
         }
 
-        function resetAll() {
-            if (!confirm('Are you sure you want to reset all progress? This cannot be undone.')) return;
+        // In-page replacement for the browser's confirm(): resolves true on OK/Enter, false on Cancel/Escape/backdrop
+        function appConfirm(message) {
+            return new Promise(resolve => {
+                const modal = document.getElementById('confirm-modal');
+                const okBtn = document.getElementById('confirm-ok');
+                const cancelBtn = document.getElementById('confirm-cancel');
+                document.getElementById('confirm-message').textContent = message;
+                const finish = (result) => {
+                    modal.classList.remove('active');
+                    okBtn.removeEventListener('click', onOk);
+                    cancelBtn.removeEventListener('click', onCancel);
+                    modal.removeEventListener('click', onBackdrop);
+                    document.removeEventListener('keydown', onKey, true);
+                    resolve(result);
+                };
+                const onOk = () => finish(true);
+                const onCancel = () => finish(false);
+                const onBackdrop = (e) => { if (e.target === modal) finish(false); };
+                const onKey = (e) => {
+                    if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+                    else if (e.key === 'Enter') { e.preventDefault(); finish(document.activeElement !== cancelBtn); }
+                };
+                okBtn.addEventListener('click', onOk);
+                cancelBtn.addEventListener('click', onCancel);
+                modal.addEventListener('click', onBackdrop);
+                document.addEventListener('keydown', onKey, true);
+                modal.classList.add('active');
+                okBtn.focus();
+            });
+        }
+
+        async function resetAll() {
+            if (!(await appConfirm('Are you sure you want to reset all progress? This cannot be undone.'))) return;
 
             localStorage.removeItem('worldcup2026');
             gameState = {
