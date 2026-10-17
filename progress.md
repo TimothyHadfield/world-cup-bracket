@@ -25,6 +25,7 @@ None.
 
 ## Decisions
 - 2026-10-16 (sweep, no Tim input): fixed clear defects only, all pixel-neutral at 393px and 1440px (layout fingerprint identical to the live build): group re-submit double-counted standings; removing a player who had played crashed the Statistics tab; names with `'` couldn't be removed and names with `<` rendered as HTML; Load Progress button did nothing visible; R32 slot kept a team after its group was reset; knockout reset left the winner in the next round; scores typed in other cards were wiped when any match was submitted; sideways scroll on phones narrower than 390px.
+- 2026-10-17 (fix wave, Tim's "no browser dialogs" rule): Reset All now asks in an in-page dialog (`appConfirm`, reuses the knockout modal box; Cancel grey, OK red like Reset All) instead of the browser `confirm()`. Cancel/Escape/backdrop reset nothing, OK/Enter reset as before. Checks H in `docs/phone-view-checks.js`.
 - 2026-10-16: added meta description, empty favicon (stops a 404), aria-labels on inputs/selects/close and remove buttons.
 
 ## NOT verified
