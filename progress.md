@@ -9,6 +9,7 @@ None set by Tim. The app is finished and published; work only happens when Tim a
 ## Status
 | Area | State |
 |---|---|
+| Site icon | Added 2026-10-17: `icon.svg` (gold trophy on navy #16213e) as tab favicon + `apple-touch-icon.png` 180px for iPhone home screen |
 | App (`index.html`) | Live at https://timothyhadfield.github.io/world-cup-bracket/ |
 | Tests | None (single HTML file). Verified with phone-view `--eval` scripts |
 | Data | Browser `localStorage` only (`worldcup2026`); no accounts, no backend |
